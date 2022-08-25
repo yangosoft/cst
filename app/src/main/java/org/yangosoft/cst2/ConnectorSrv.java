@@ -36,7 +36,7 @@ public class ConnectorSrv extends Service {
             //do heavy work on a background thread
             Toast.makeText(this,"STARTED",Toast.LENGTH_LONG);
             try {
-                DataPoster poster = new DataPoster();
+                DataPoster poster = new DataPoster(MainActivity.instance);
 
                 Thread t = new Thread(poster);
 
