@@ -65,7 +65,8 @@ public class FirstFragment extends Fragment {
     {
         android.content.Intent serviceIntent = new android.content.Intent(getActivity(), ConnectorSrv.class);
         serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android");
-        ContextCompat.startForegroundService(getActivity(), serviceIntent);
+        //ContextCompat.startForegroundService(getActivity(), serviceIntent);
+        getActivity().startForegroundService(serviceIntent);
     }
 
     public void stop()
@@ -73,6 +74,7 @@ public class FirstFragment extends Fragment {
         Intent serviceIntent = new Intent(getActivity(), ConnectorSrv.class);
 
         getActivity().stopService(serviceIntent);
+
     }
 
 }

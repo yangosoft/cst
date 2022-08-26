@@ -34,7 +34,7 @@ public class ConnectorSrv extends Service {
                     .build();
             startForeground(1, notification);
             //do heavy work on a background thread
-            Toast.makeText(this,"STARTED",Toast.LENGTH_LONG);
+            Toast.makeText(this,"STARTED",Toast.LENGTH_LONG).show();
             try {
                 DataPoster poster = new DataPoster(MainActivity.instance);
 
@@ -69,5 +69,7 @@ public class ConnectorSrv extends Service {
                 manager.createNotificationChannel(serviceChannel);
             }
         }
+
+
 
 }
