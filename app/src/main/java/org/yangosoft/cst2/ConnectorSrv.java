@@ -13,8 +13,9 @@ import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 
 public class ConnectorSrv extends Service {
-
-        public static final String CHANNEL_ID = "ForegroundServiceChannel";
+        Thread t = null;
+        DataPoster poster = null;
+    public static final String CHANNEL_ID = "ForegroundServiceChannel";
         @Override
         public void onCreate() {
             super.onCreate();
@@ -22,6 +23,18 @@ public class ConnectorSrv extends Service {
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
             String input = intent.getStringExtra("inputExtra");
+            if (input.equalsIgnoreCase("STOP"))
+            {
+                if(t != null) {
+                    poster.stop();
+                    t.interrupt();
+                    poster = null;
+                    t = null;
+                }
+                stopSelf();
+                return Service.START_NOT_STICKY;
+            }
+
             createNotificationChannel();
             Intent notificationIntent = new Intent(this, MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(this,
@@ -36,9 +49,9 @@ public class ConnectorSrv extends Service {
             //do heavy work on a background thread
             Toast.makeText(this,"STARTED",Toast.LENGTH_LONG).show();
             try {
-                DataPoster poster = new DataPoster(MainActivity.instance);
+                poster = new DataPoster(MainActivity.instance);
 
-                Thread t = new Thread(poster);
+                t = new Thread(poster);
 
                 t.start();
                 Thread.sleep(5000);

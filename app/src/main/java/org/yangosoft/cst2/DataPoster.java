@@ -2,12 +2,19 @@ package org.yangosoft.cst2;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+
+import android.location.LocationListener;
+
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -17,10 +24,11 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class DataPoster implements Runnable, OnSuccessListener<Location> {
+public class DataPoster implements Runnable, OnSuccessListener<Location>, LocationListener {
 
     private volatile boolean do_work = true;
     private Location location;
+
     private volatile boolean locationFound = false;
     private final Activity activity;
 
@@ -28,12 +36,28 @@ public class DataPoster implements Runnable, OnSuccessListener<Location> {
         this.activity = act;
     }
 
+    FusedLocationProviderClient fusedLocationClient;
+
     @Override
     public void run() {
 
         while (do_work) {
             try {
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
+
+                /*LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+                if (ActivityCompat.checkSelfPermission(activity.getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.activity.getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+*/
                 //InetAddress serverAddr = InetAddress.getByAddress(192,168,1,137);
                 locationFound = false;
                 Socket socket = new Socket("192.168.1.37", 9999);
@@ -62,6 +86,8 @@ public class DataPoster implements Runnable, OnSuccessListener<Location> {
                     return;
                 }
                 fusedLocationClient.getLastLocation().addOnSuccessListener(activity, this);
+
+
                 try {
                     while ((totalRetries > 0) && (locationFound == false)) {
                         dataOutputStream.writeUTF("Stll waiting " + totalRetries + "\n");
@@ -80,6 +106,7 @@ public class DataPoster implements Runnable, OnSuccessListener<Location> {
                 dataOutputStream.flush(); // send the message
                 dataOutputStream.close(); // close the output stream when we're done.
                 socket.close();
+                this.location = null;
 
 
             } catch (UnknownHostException e1) {
@@ -115,4 +142,9 @@ public class DataPoster implements Runnable, OnSuccessListener<Location> {
     }
 
 
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        this.location = location;
+        locationFound = true;
+    }
 }
